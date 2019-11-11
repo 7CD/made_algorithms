@@ -114,10 +114,10 @@ template<class T>
 class Queue {
 public:
     Queue() = default;
-    Queue(const Queue&) = delete;
-    Queue(const Queue&&) = delete;
-    Queue& operator= (const Queue&) = delete;
-    Queue& operator= (const Queue&&) = delete;
+    Queue(const Queue&) = default;
+    Queue(const Queue&&) = default;
+    Queue& operator= (const Queue&) = default;
+    Queue& operator= (const Queue&&) = default;
     ~Queue() = default;
 
     void push_back(const T& value) {
