@@ -78,7 +78,7 @@ public:
         delete nodeToDelete;
     }
 
-    const T& orderStatistic(int order) {
+    const T& orderStatistic(int order) const {
         assert(order >= 0);
         assert(order < size);
         TreeNode* x = head; // текущий узел поиска
