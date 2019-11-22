@@ -29,64 +29,82 @@ g(k, i)=g(k, i-1) + i (mod m). m - степень двойки.
 #include <string>
 #include <vector>
 
+template<class T, class Hash = std::hash<T>, class KeyEqual = std::equal_to<T>>
 class HashTable {
  public:
-  bool Has(const std::string& key) const;
-  bool Add(const std::string& key);
-  bool Remove(const std::string& key);
+  bool Has(const T& key) const;
+  bool Add(const T& key);
+  bool Remove(const T& key);
+  HashTable(): size(0), capacity(8), loadFactor(0.75), table(capacity, nullptr), tombstone(new TableNode("")) {}
+  ~HashTable() {
+    for (size_t i = 0; i < capacity; ++i) {
+      if (table[i] != nullptr && table[i] != tombstone)
+        delete table[i] ;
+    }
+    delete tombstone;
+  }
+  HashTable(const HashTable&) = delete;
+  HashTable(const HashTable&&) = delete;
+  HashTable& operator= (const HashTable&) = delete;
+  HashTable& operator= (const HashTable&&) = delete;
  private:
-  size_t size = 0;
-  size_t capacity = 8;
-  size_t maxSize = capacity / 4 * 3;
-  size_t a = 13; // константа для вычисления полиномиального кэша
-  std::vector<std::string> table =  std::vector<std::string>(capacity);
-  const std::string tombstone = "_DELETED_"; // метка удаленного элемена
-  size_t hash(const std::string& key) const;
-  inline bool Has(const std::string& key, const size_t hash) const;
+  struct TableNode {
+    T key;
+    TableNode(T key) : key(std::move(key)) {}
+  };
+  TableNode* tombstone;
+  size_t size;
+  size_t capacity;
+  const double loadFactor;
+  std::vector<TableNode*> table;
+  Hash hash;
+  KeyEqual equals;
   inline size_t probe(const size_t hash, const size_t i) const;
   void grow();
 };
 
-bool HashTable::Has(const std::string& key) const {
-  assert(!key.empty());
-  size_t hash = this->hash(key);
-  return Has(key, hash);
-}
-
-inline bool HashTable::Has(const std::string& key, size_t hash) const {
+template<class T, class Hash, class KeyEqual>
+bool HashTable<T, Hash, KeyEqual>::Has(const T& key) const {
+  size_t hash = this->hash(key, capacity);
   for (size_t i = 0; i < capacity; ++i) {
     hash = probe(hash, i);
-    if (table[hash].empty()) return false;
-    if (table[hash] == key) return true;
+    if (table[hash] == nullptr) return false;
+    if (table[hash] != tombstone && equals(table[hash]->key, key)) return true;
   }
+  return false;
 }
 
-bool HashTable::Add(const std::string& key) {
-  assert(!key.empty());
-  size_t hash = this->hash(key);
-  if (Has(key, hash)) return false;
-  size_t x = 0;
+template<class T, class Hash, class KeyEqual>
+bool HashTable<T, Hash, KeyEqual>::Add(const T& key) {
+  size_t hash = this->hash(key, capacity);
+  size_t placeToInsert = 0;
   for (size_t i = 0; i < capacity; ++i) {
     hash = probe(hash, i);
-    if (table[hash].empty() || table[hash] == tombstone) {
-      table[hash] = key;
-      ++size;
-      if (size > maxSize) grow();
-      return true;
+    if (table[hash] == nullptr) {
+      placeToInsert = hash;
+      break;
     }
-    if (table[hash] == key) return false;
+    if (table[hash] == tombstone) {
+      placeToInsert = hash;
+    } else if (equals(table[hash]->key, key)) {
+      return false;
+    }
   }
+  table[placeToInsert] =  new TableNode(key);
+  ++size;
+  if (size > capacity * loadFactor) grow();
+  return true;
 }
 
-void HashTable::grow() {
-  std::vector<std::string> oldTable = std::move(table);
+template<class T, class Hash, class KeyEqual>
+void HashTable<T, Hash, KeyEqual>::grow() {
+  std::vector<TableNode*> oldTable = std::move(table);
   capacity *= 2;
-  maxSize = capacity / 4 * 3;
-  table = std::vector<std::string>(capacity);
-  for (auto e : oldTable) {
-    if (!e.empty() && e != tombstone) {
-      size_t hash = this->hash(e);
-      for (size_t i = 0; !table[hash].empty() && i < capacity; ++i) {
+  table = std::vector<TableNode*>(capacity, nullptr);
+  for (TableNode* e : oldTable) {
+    if (e != nullptr && e != tombstone) {
+      size_t hash = this->hash(e->key, capacity);
+      for (size_t i = 0; table[hash] != nullptr && i < capacity; ++i) {
         hash = probe(hash, i);
       }
       table[hash] = e;
@@ -94,13 +112,14 @@ void HashTable::grow() {
   }
 }
 
-bool HashTable::Remove(const std::string& key) {
-  assert(!key.empty());
-  size_t hash = this->hash(key);
+template<class T, class Hash, class KeyEqual>
+bool HashTable<T, Hash, KeyEqual>::Remove(const T& key) {
+  size_t hash = this->hash(key, capacity);
   for (size_t i = 0; i < capacity; ++i) {
     hash = probe(hash, i);
-    if (table[hash].empty()) return false;
-    if (table[hash] == key) {
+    if (table[hash] == nullptr) return false;
+    if (table[hash] != tombstone && equals(table[hash]->key, key)) {
+        delete table[hash];
         table[hash] = tombstone;
         --size;
         return true;
@@ -108,23 +127,28 @@ bool HashTable::Remove(const std::string& key) {
   }
 }
 
-// Полиномиальный хэш строки по схеме Горнера
-size_t HashTable::hash(const std::string& key) const {
-  size_t hash = 0;
-  for(const char& c : key) {
-    hash = (hash * a + c) % capacity;
-  }
-  return hash;
-}
-
 // Квадратичное пробирование
-inline size_t HashTable::probe(size_t hashPrev, size_t i) const {
+template<class T, class Hash, class KeyEqual>
+inline size_t HashTable<T, Hash, KeyEqual>::probe(size_t hashPrev, size_t i) const {
   return (hashPrev + i) % capacity;
 }
 
 
+class StringPolynomialHash {
+  const size_t a = 13;
+public:
+  size_t operator()(const std::string& key, size_t maxValue) const {
+    size_t hash = 0;
+    for(const char& c : key) {
+      hash = (hash * a + c) % maxValue;
+    }
+    return hash;
+  }
+};
+
+
 int main() {
-  HashTable table;
+  HashTable<std::string, StringPolynomialHash> table;
   char command = ' ';
   std::string value;
   while (std::cin >> command >> value) {
