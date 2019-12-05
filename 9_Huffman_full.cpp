@@ -12,13 +12,13 @@ using namespace std;
 
 typedef unsigned char byte;
 
-// Входной поток
+// Р’С…РѕРґРЅРѕР№ РїРѕС‚РѕРє
 struct IInputStream {
-	// Возвращает false, если поток закончился
+	// Р’РѕР·РІСЂР°С‰Р°РµС‚ false, РµСЃР»Рё РїРѕС‚РѕРє Р·Р°РєРѕРЅС‡РёР»СЃСЏ
 	virtual bool Read(byte& value) = 0;
 };
 
-// Выходной поток
+// Р’С‹С…РѕРґРЅРѕР№ РїРѕС‚РѕРє
 struct IOutputStream {
 	virtual void Write(byte value) = 0;
 };
@@ -47,13 +47,13 @@ class BitsWriter {
     }
   }
 
-  // Если последний байт заполнен неполностью - незаполненые биты будут нулями
-  // В конец записывем дополнительный байт, означающий сколько лишних бит было дописано в предыдущий байт
+  // Р•СЃР»Рё РїРѕСЃР»РµРґРЅРёР№ Р±Р°Р№С‚ Р·Р°РїРѕР»РЅРµРЅ РЅРµРїРѕР»РЅРѕСЃС‚СЊСЋ - РЅРµР·Р°РїРѕР»РЅРµРЅС‹Рµ Р±РёС‚С‹ Р±СѓРґСѓС‚ РЅСѓР»СЏРјРё
+  // Р’ РєРѕРЅРµС† Р·Р°РїРёСЃС‹РІРµРј РґРѕРїРѕР»РЅРёС‚РµР»СЊРЅС‹Р№ Р±Р°Р№С‚, РѕР·РЅР°С‡Р°СЋС‰РёР№ СЃРєРѕР»СЊРєРѕ Р»РёС€РЅРёС… Р±РёС‚ Р±С‹Р»Рѕ РґРѕРїРёСЃР°РЅРѕ РІ РїСЂРµРґС‹РґСѓС‰РёР№ Р±Р°Р№С‚
   std::vector<byte> GetResult() {
-    if (bitsCount != 0) { // Добавляем в буфер accumulator, только в случае, если в нем что-то есть.
+    if (bitsCount != 0) { // Р”РѕР±Р°РІР»СЏРµРј РІ Р±СѓС„РµСЂ accumulator, С‚РѕР»СЊРєРѕ РІ СЃР»СѓС‡Р°Рµ, РµСЃР»Рё РІ РЅРµРј С‡С‚Рѕ-С‚Рѕ РµСЃС‚СЊ.
       buffer.push_back(accumulator);
       buffer.push_back(8 - bitsCount);
-    } else {              // Иначе добавляем только указание, что лишних бит нет
+    } else {              // РРЅР°С‡Рµ РґРѕР±Р°РІР»СЏРµРј С‚РѕР»СЊРєРѕ СѓРєР°Р·Р°РЅРёРµ, С‡С‚Рѕ Р»РёС€РЅРёС… Р±РёС‚ РЅРµС‚
        buffer.push_back(0);
     }
     return buffer;
@@ -61,13 +61,13 @@ class BitsWriter {
 
  private:
   std::vector<byte> buffer;
-  byte accumulator = 0; // формируемый из битов байт
-  int bitsCount = 0;    // сколько бит уже записано в accumulator
+  byte accumulator = 0; // С„РѕСЂРјРёСЂСѓРµРјС‹Р№ РёР· Р±РёС‚РѕРІ Р±Р°Р№С‚
+  int bitsCount = 0;    // СЃРєРѕР»СЊРєРѕ Р±РёС‚ СѓР¶Рµ Р·Р°РїРёСЃР°РЅРѕ РІ accumulator
 };
 
-// считывет из IInputStream биты и байты в предположении,
-// что в последнем байте указано, сколько лишних бит записано в предыдущий байт
-// возвращает false, когда больше считать нельзя
+// СЃС‡РёС‚С‹РІРµС‚ РёР· IInputStream Р±РёС‚С‹ Рё Р±Р°Р№С‚С‹ РІ РїСЂРµРґРїРѕР»РѕР¶РµРЅРёРё,
+// С‡С‚Рѕ РІ РїРѕСЃР»РµРґРЅРµРј Р±Р°Р№С‚Рµ СѓРєР°Р·Р°РЅРѕ, СЃРєРѕР»СЊРєРѕ Р»РёС€РЅРёС… Р±РёС‚ Р·Р°РїРёСЃР°РЅРѕ РІ РїСЂРµРґС‹РґСѓС‰РёР№ Р±Р°Р№С‚
+// РІРѕР·РІСЂР°С‰Р°РµС‚ false, РєРѕРіРґР° Р±РѕР»СЊС€Рµ СЃС‡РёС‚Р°С‚СЊ РЅРµР»СЊР·СЏ
 class BitsReader {
  public:
   bool ReadBit(bool& value) {
@@ -76,10 +76,10 @@ class BitsReader {
       nextByte = nextNextByte;
       hasNext = input.Read(nextNextByte);
     }
-    if (!hasNext && bitsCount > 7 - nextByte) return false; // Возвращаем не все биты предпоследнего байта
-    if (!hasNext && nextByte == 0 && bitsCount == 7) { // без этого блока bitsCount обнулится и предыдущий if никогда не сработает, если nextByte = 0
+    if (!hasNext && bitsCount > 7 - nextByte) return false; // Р’РѕР·РІСЂР°С‰Р°РµРј РЅРµ РІСЃРµ Р±РёС‚С‹ РїСЂРµРґРїРѕСЃР»РµРґРЅРµРіРѕ Р±Р°Р№С‚Р°
+    if (!hasNext && nextByte == 0 && bitsCount == 7) { // Р±РµР· СЌС‚РѕРіРѕ Р±Р»РѕРєР° bitsCount РѕР±РЅСѓР»РёС‚СЃСЏ Рё РїСЂРµРґС‹РґСѓС‰РёР№ if РЅРёРєРѕРіРґР° РЅРµ СЃСЂР°Р±РѕС‚Р°РµС‚, РµСЃР»Рё nextByte = 0
         value = accumulator & (1 << (7 - bitsCount));
-        bitsCount = 8; // чтобы выполнялось условие предыдущего "if"
+        bitsCount = 8; // С‡С‚РѕР±С‹ РІС‹РїРѕР»РЅСЏР»РѕСЃСЊ СѓСЃР»РѕРІРёРµ РїСЂРµРґС‹РґСѓС‰РµРіРѕ "if"
         return true;
     }
     value = accumulator & (1 << (7 - bitsCount));
@@ -106,17 +106,17 @@ class BitsReader {
 
  private:
   IInputStream& input;
-  byte accumulator = 0;  // считанный из потока "текущий" байт
-  byte nextByte = 0;     // следующий за accumulator
-  byte nextNextByte = 0; // следующий за nextByte
-  int bitsCount = 0;     // сколько бит из accumulator уже прочитано
-  bool hasNext = false;  // конец потока; в accumulator последние биты файла, nextByte = числу лишних бит
+  byte accumulator = 0;  // СЃС‡РёС‚Р°РЅРЅС‹Р№ РёР· РїРѕС‚РѕРєР° "С‚РµРєСѓС‰РёР№" Р±Р°Р№С‚
+  byte nextByte = 0;     // СЃР»РµРґСѓСЋС‰РёР№ Р·Р° accumulator
+  byte nextNextByte = 0; // СЃР»РµРґСѓСЋС‰РёР№ Р·Р° nextByte
+  int bitsCount = 0;     // СЃРєРѕР»СЊРєРѕ Р±РёС‚ РёР· accumulator СѓР¶Рµ РїСЂРѕС‡РёС‚Р°РЅРѕ
+  bool hasNext = false;  // РєРѕРЅРµС† РїРѕС‚РѕРєР°; РІ accumulator РїРѕСЃР»РµРґРЅРёРµ Р±РёС‚С‹ С„Р°Р№Р»Р°, nextByte = С‡РёСЃР»Сѓ Р»РёС€РЅРёС… Р±РёС‚
 };
 
 
 struct BinaryTreeNode {
-  byte char_;         // "символ", байт файла
-  unsigned int value; // частота встречаемости
+  byte char_;         // "СЃРёРјРІРѕР»", Р±Р°Р№С‚ С„Р°Р№Р»Р°
+  unsigned int value; // С‡Р°СЃС‚РѕС‚Р° РІСЃС‚СЂРµС‡Р°РµРјРѕСЃС‚Рё
   BinaryTreeNode* left;
   BinaryTreeNode* right;
 
@@ -138,19 +138,19 @@ struct BinaryTreeNode {
 
 BinaryTreeNode* buildHTree(std::vector<byte>& file) {
   assert(!file.empty());
-	// считаем частоты
+	// СЃС‡РёС‚Р°РµРј С‡Р°СЃС‚РѕС‚С‹
 	std::vector<byte> freqs(256, 0);
 	for (byte char_ : file) {
     ++freqs[char_];
 	}
-	// Очередь с приоритетом для получения поддерева с минимальным значением
+	// РћС‡РµСЂРµРґСЊ СЃ РїСЂРёРѕСЂРёС‚РµС‚РѕРј РґР»СЏ РїРѕР»СѓС‡РµРЅРёСЏ РїРѕРґРґРµСЂРµРІР° СЃ РјРёРЅРёРјР°Р»СЊРЅС‹Рј Р·РЅР°С‡РµРЅРёРµРј
 	auto cmp = [](BinaryTreeNode* a, BinaryTreeNode* b)->bool{ return a->value > b->value; };
 	std::priority_queue<BinaryTreeNode*, std::vector<BinaryTreeNode*>, decltype(cmp)> queue(cmp);
   for (int char_ = 0; char_ < 256; ++char_) {
     if (freqs[char_] > 0)
       queue.push(new BinaryTreeNode(char_, freqs[char_], nullptr, nullptr));
   }
-  // Строим дерево Хаффмана
+  // РЎС‚СЂРѕРёРј РґРµСЂРµРІРѕ РҐР°С„С„РјР°РЅР°
   while (queue.size() >= 2) {
     BinaryTreeNode* first = queue.top();
     queue.pop();
@@ -161,9 +161,9 @@ BinaryTreeNode* buildHTree(std::vector<byte>& file) {
   return queue.top();
 }
 
-// Обходим рекурсивно дерево: сначала в левый лист, затем в правый
-// Если пришли в лист печатаем бит "1" и следом байт-символ, хранящийся в листе
-// В нелистовом узле печатаем бит "0"
+// РћР±С…РѕРґРёРј СЂРµРєСѓСЂСЃРёРІРЅРѕ РґРµСЂРµРІРѕ: СЃРЅР°С‡Р°Р»Р° РІ Р»РµРІС‹Р№ Р»РёСЃС‚, Р·Р°С‚РµРј РІ РїСЂР°РІС‹Р№
+// Р•СЃР»Рё РїСЂРёС€Р»Рё РІ Р»РёСЃС‚ РїРµС‡Р°С‚Р°РµРј Р±РёС‚ "1" Рё СЃР»РµРґРѕРј Р±Р°Р№С‚-СЃРёРјРІРѕР», С…СЂР°РЅСЏС‰РёР№СЃСЏ РІ Р»РёСЃС‚Рµ
+// Р’ РЅРµР»РёСЃС‚РѕРІРѕРј СѓР·Р»Рµ РїРµС‡Р°С‚Р°РµРј Р±РёС‚ "0"
 void encodeHTree(BinaryTreeNode* node, BitsWriter& output) {
   if (node == nullptr) return;
   if (node->left == nullptr && node->right == nullptr) {
@@ -176,9 +176,9 @@ void encodeHTree(BinaryTreeNode* node, BitsWriter& output) {
   }
 }
 
-// Рекурсивно строим дерево: сначала добавляем левого сына, затем правого
-// Читаем бит из потока. Если "1", читаем следом байт-символ и возвращаем соответствующий лист
-// Если "0", возвращаем узел с рекурентно добытым левым и правым сыновьями
+// Р РµРєСѓСЂСЃРёРІРЅРѕ СЃС‚СЂРѕРёРј РґРµСЂРµРІРѕ: СЃРЅР°С‡Р°Р»Р° РґРѕР±Р°РІР»СЏРµРј Р»РµРІРѕРіРѕ СЃС‹РЅР°, Р·Р°С‚РµРј РїСЂР°РІРѕРіРѕ
+// Р§РёС‚Р°РµРј Р±РёС‚ РёР· РїРѕС‚РѕРєР°. Р•СЃР»Рё "1", С‡РёС‚Р°РµРј СЃР»РµРґРѕРј Р±Р°Р№С‚-СЃРёРјРІРѕР» Рё РІРѕР·РІСЂР°С‰Р°РµРј СЃРѕРѕС‚РІРµС‚СЃС‚РІСѓСЋС‰РёР№ Р»РёСЃС‚
+// Р•СЃР»Рё "0", РІРѕР·РІСЂР°С‰Р°РµРј СѓР·РµР» СЃ СЂРµРєСѓСЂРµРЅС‚РЅРѕ РґРѕР±С‹С‚С‹Рј Р»РµРІС‹Рј Рё РїСЂР°РІС‹Рј СЃС‹РЅРѕРІСЊСЏРјРё
 BinaryTreeNode* decodeHTree(BitsReader& bitsReader) {
   BinaryTreeNode* node;
   bool bit;
@@ -195,8 +195,8 @@ BinaryTreeNode* decodeHTree(BitsReader& bitsReader) {
   return node;
 }
 
-// Получаем коды символов из дерева Хаффмана
-// Налево - 0, направо - 1
+// РџРѕР»СѓС‡Р°РµРј РєРѕРґС‹ СЃРёРјРІРѕР»РѕРІ РёР· РґРµСЂРµРІР° РҐР°С„С„РјР°РЅР°
+// РќР°Р»РµРІРѕ - 0, РЅР°РїСЂР°РІРѕ - 1
 void fillTableOfCodes(BinaryTreeNode* node, std::unordered_map<byte, std::vector<bool>>& tableOfCodes, std::vector<bool>& code) {
   if (node == nullptr) {
     code.pop_back();
@@ -214,18 +214,18 @@ void fillTableOfCodes(BinaryTreeNode* node, std::unordered_map<byte, std::vector
 
 
 void Encode(IInputStream& original, IOutputStream& compressed) {
-  // считываем файл по байтам
+  // СЃС‡РёС‚С‹РІР°РµРј С„Р°Р№Р» РїРѕ Р±Р°Р№С‚Р°Рј
   std::vector<byte> originalFile;
   byte oneByte = 0;
   while (original.Read(oneByte)) {
 		originalFile.push_back(oneByte);
 	}
-	// Строим дерево Хаффмана
+	// РЎС‚СЂРѕРёРј РґРµСЂРµРІРѕ РҐР°С„С„РјР°РЅР°
   BinaryTreeNode* hTree = buildHTree(originalFile);
-  // Записываем дерево в начало архива
+  // Р—Р°РїРёСЃС‹РІР°РµРј РґРµСЂРµРІРѕ РІ РЅР°С‡Р°Р»Рѕ Р°СЂС…РёРІР°
   BitsWriter bitsWriter;
   encodeHTree(hTree, bitsWriter);
-  // Кодируем и записываем последовательность байт исходного файла
+  // РљРѕРґРёСЂСѓРµРј Рё Р·Р°РїРёСЃС‹РІР°РµРј РїРѕСЃР»РµРґРѕРІР°С‚РµР»СЊРЅРѕСЃС‚СЊ Р±Р°Р№С‚ РёСЃС…РѕРґРЅРѕРіРѕ С„Р°Р№Р»Р°
   std::unordered_map<byte, std::vector<bool>> tableOfCodes;
   std::vector<bool> tmp_vector;
   fillTableOfCodes(hTree, tableOfCodes, tmp_vector);
@@ -248,13 +248,13 @@ void Decode(IInputStream& compressed, IOutputStream& original) {
   BinaryTreeNode* node = hTree;
   if (node->left == nullptr && node->right == nullptr) assert(false);
   while (true) {
-    if (node->left == nullptr && node->right == nullptr) { // попали в лист - записываем символ из него, переходим к корню
+    if (node->left == nullptr && node->right == nullptr) { // РїРѕРїР°Р»Рё РІ Р»РёСЃС‚ - Р·Р°РїРёСЃС‹РІР°РµРј СЃРёРјРІРѕР» РёР· РЅРµРіРѕ, РїРµСЂРµС…РѕРґРёРј Рє РєРѕСЂРЅСЋ
       original.Write(node->char_);
       node = hTree;
     } else {
-       if (!bitsReader.ReadBit(bit)) return; // если не в листе считывем бит
-       if (bit) node = node->right; // "1" - идем вправо
-       else node = node->left; // "0" - идем влево
+       if (!bitsReader.ReadBit(bit)) return; // РµСЃР»Рё РЅРµ РІ Р»РёСЃС‚Рµ СЃС‡РёС‚С‹РІРµРј Р±РёС‚
+       if (bit) node = node->right; // "1" - РёРґРµРј РІРїСЂР°РІРѕ
+       else node = node->left; // "0" - РёРґРµРј РІР»РµРІРѕ
     }
   }
 }
@@ -262,7 +262,7 @@ void Decode(IInputStream& compressed, IOutputStream& original) {
 //
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// Входной поток
+// Р’С…РѕРґРЅРѕР№ РїРѕС‚РѕРє
 class CInputStream : public IInputStream {
 public:
 	CInputStream(const vector<byte>& _body) : index(0), body(_body) {}
@@ -285,7 +285,7 @@ bool CInputStream::Read(byte& value)
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// Выходной поток
+// Р’С‹С…РѕРґРЅРѕР№ РїРѕС‚РѕРє
 class COutputStream : public IOutputStream {
 public:
 	COutputStream(vector<byte>& _body) : body(_body) { body.clear(); }
@@ -296,9 +296,9 @@ private:
 };
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// Основное приложение
+// РћСЃРЅРѕРІРЅРѕРµ РїСЂРёР»РѕР¶РµРЅРёРµ
 
-// Считываем все файлы, что перечислены во входе
+// РЎС‡РёС‚С‹РІР°РµРј РІСЃРµ С„Р°Р№Р»С‹, С‡С‚Рѕ РїРµСЂРµС‡РёСЃР»РµРЅС‹ РІРѕ РІС…РѕРґРµ
 void fillInputs(vector< vector<byte> >& inputs)
 {
 	inputs.clear();
@@ -307,7 +307,7 @@ void fillInputs(vector< vector<byte> >& inputs)
 	getline( cin, currentFileName );
 
 
-		// Есть еще один файл, который следует закодировать
+		// Р•СЃС‚СЊ РµС‰Рµ РѕРґРёРЅ С„Р°Р№Р», РєРѕС‚РѕСЂС‹Р№ СЃР»РµРґСѓРµС‚ Р·Р°РєРѕРґРёСЂРѕРІР°С‚СЊ
 		inputs.push_back(vector<byte>());
 
 		ifstream file;
@@ -348,12 +348,12 @@ int calculateSize(const vector< vector<byte> >& array)
 
 int main()
 {
-	// Получаем данные, которые нужно закодировать
+	// РџРѕР»СѓС‡Р°РµРј РґР°РЅРЅС‹Рµ, РєРѕС‚РѕСЂС‹Рµ РЅСѓР¶РЅРѕ Р·Р°РєРѕРґРёСЂРѕРІР°С‚СЊ
 	vector< vector<byte> > input;
 
 	fillInputs(input);
 
-	// Сжимаем данные
+	// РЎР¶РёРјР°РµРј РґР°РЅРЅС‹Рµ
 	vector< vector<byte> > compressed;
 	compressed.resize(input.size());
 	for (unsigned int i = 0; i < input.size(); i++) {
@@ -362,7 +362,7 @@ int main()
 		Encode(iStream, oStream);
 	}
 
-	// Распаковываем сжатые данные и проверяем, что они совпадают с оригиналом
+	// Р Р°СЃРїР°РєРѕРІС‹РІР°РµРј СЃР¶Р°С‚С‹Рµ РґР°РЅРЅС‹Рµ Рё РїСЂРѕРІРµСЂСЏРµРј, С‡С‚Рѕ РѕРЅРё СЃРѕРІРїР°РґР°СЋС‚ СЃ РѕСЂРёРіРёРЅР°Р»РѕРј
 	for (unsigned int i = 0; i < input.size(); i++) {
 		vector<byte> output;
 		CInputStream iStream(compressed[i]);
@@ -374,7 +374,7 @@ int main()
 		}
 	}
 
-	// Вычисляем степень сжатия
+	// Р’С‹С‡РёСЃР»СЏРµРј СЃС‚РµРїРµРЅСЊ СЃР¶Р°С‚РёСЏ
 	cout << (100. * calculateSize(compressed) / calculateSize(input));
 
 	return 0;
