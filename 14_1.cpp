@@ -153,11 +153,11 @@ long long int MST_weight(std::vector<std::vector<std::pair<int, int>>>& graph) {
   }
 
   auto cmp = [](const vertex& a, const vertex& b)->bool{ return a.distance > b.distance; };
-	Heap<vertex, decltype(cmp)> min_heap(V, cmp);
+  Heap<vertex, decltype(cmp)> min_heap(V, cmp);
 
-	int no_matter;
+  int no_matter;
 
-	while (!min_heap.empty()) {
+  while (!min_heap.empty()) {
     vertex u = min_heap.pop();
     tree_weight += u.distance;
 
@@ -170,7 +170,7 @@ long long int MST_weight(std::vector<std::vector<std::pair<int, int>>>& graph) {
         }
       }
     }
-	}
+  }
 
   return tree_weight;
 }
